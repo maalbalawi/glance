@@ -197,6 +197,12 @@ icon: di:immich # di for Dashboard icons https://github.com/homarr-labs/dashboar
 icon: mdi:camera # mdi for Material Design icons https://pictogrammers.com/library/mdi/
 ```
 
+The `sh:` and `di:` prefixes request SVG icons by default. If an icon is only available as a PNG, add the extension to its name:
+
+```yaml
+icon: sh:unmanic.png
+```
+
 > [!NOTE]
 >
 > The icons are loaded externally and are hosted on `cdn.jsdelivr.net`, if you do not wish to depend on a 3rd party you are free to download the icons individually and host them locally.
@@ -209,6 +215,12 @@ icon: auto-invert sh:glance-dark # with a selfh.st icon
 ```
 
 This expects the icon to be black and will automatically invert it to white when using a dark theme.
+
+If there is no `.svg` version available for a `selfh.st` or `Dashboard` icon, then you can add the image extension of the format you wish to use.
+```yaml
+icon: sh:glance.png # use the .png version of the icon
+icon: sh:glance.webp # use the .webp version of the icon
+```
 
 ## Config schema
 
@@ -1158,6 +1170,8 @@ Can be used to specify the order in which the posts should get returned. Possibl
 Available only when `sort-by` is set to `top`. Possible values are `hour`, `day`, `week`, `month`, `year` and `all`.
 
 ##### `search`
+**Due to changes in Reddit's API, the search property works only when app-auth is configured.**
+
 Keywords to search for. Searching within specific fields is also possible, **though keep in mind that Reddit may remove the ability to use any of these at any time**:
 
 ![](images/reddit-field-search.png)
@@ -1562,6 +1576,7 @@ Examples:
 | method | string | no | GET |
 | body-type | string | no | json |
 | body | any | no | |
+| basic-auth | map | no | |
 | frameless | boolean | no | false |
 | allow-insecure | boolean | no | false |
 | skip-json-validation | boolean | no | false |
@@ -1605,6 +1620,15 @@ body:
 body-type: string
 body: |
   key1=value1&key2=value2
+```
+
+##### `basic-auth`
+Optionally specify credentials to be sent with the request using HTTP basic authentication. Example:
+
+```yaml
+basic-auth:
+  username: your-username
+  password: your-password
 ```
 
 ##### `frameless`
@@ -1879,7 +1903,7 @@ Preview:
 
 To reorder tasks, drag and drop them by grabbing the top side of the task:
 
-![](images/reorder-todo-tasks-prevew.gif)
+![](images/reorder-todo-tasks-preview.gif)
 
 To delete a task, hover over it and click on the trash icon.
 
@@ -2239,7 +2263,9 @@ When set to `true`, automatically converts container names such as `container_na
 ##### `sock-path`
 The path to the Docker socket. This can also be a [remote socket](https://docs.docker.com/engine/daemon/remote-access/) or proxied socket using something like [docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy).
 
-###### `category`
+If the socket path starts with `tcp://` or `http://`, it will be treated as a remote socket. Anything else will be treated as a path to a Unix socket.
+
+##### `category`
 Filter to only the containers which have this category specified via the `glance.category` label. Useful if you want to have multiple containers widgets, each showing a different set of containers.
 
 <details>
@@ -2354,7 +2380,7 @@ Only required when using AdGuard Home. The username used to log into the admin d
 ##### `password`
 Required when using AdGuard Home, where the password is the one used to log into the admin dashboard.
 
-Also required when using Pi-hole major version 6 and above, where the password is the one used to log into the admin dashboard or the application password, which can be found in `Settings -> Web Interface / API -> Configure app password`.
+For Pi-hole version 6+, this field is required if you have set a password to log into Pi-hole. You can either use the password you use to log into the admin dashboard or the application password, which can be found in `Settings -> Web Interface / API -> Configure app password`.
 
 ##### `token`
 Required when using Pi-hole major version 5 or earlier. The API token which can be found in `Settings -> API -> Show API token`.
@@ -2395,6 +2421,8 @@ To display data from a remote server you need to have the Glance Agent running o
 In the event that the CPU temperature goes over 80°C, a flame icon will appear next to the CPU. The progress indicators will also turn red (or the equivalent of your negative color) to hopefully grab your attention if anything is unusually high:
 
 ![](images/server-stats-flame-icon.png)
+
+The CPU value is calculated from the system's load average (1 minute, with the 15 minute average shown in the popover) relative to the number of logical CPU cores. On Linux, the load average also includes processes that are waiting for disk I/O, so on servers with a lot of disk activity, such as a NAS with spinning hard drives, the value can be noticeably higher than the actual CPU utilization.
 
 #### Properties
 | Name | Type | Required | Default |
